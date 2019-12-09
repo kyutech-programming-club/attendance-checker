@@ -4,3 +4,7 @@ from main import app
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/users/create')
+def new_user():
+    return render_template('new_user.html')
