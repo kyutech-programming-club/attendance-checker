@@ -7,6 +7,7 @@ def save_user(user_name):
     db.session.add(user)
     db.session.commit()
     print("save new user:", user_name)
+    flash("save new user successfully")
 
 @app.route('/')
 def index():
