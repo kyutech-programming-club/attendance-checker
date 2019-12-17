@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, flash
+from flask import request, redirect, url_for, render_template, flash, session
 from main import app, db
 from main.models import User
 
@@ -24,3 +24,16 @@ def new_user():
             save_user(user_name)
             return redirect(url_for('index'))
     return render_template('new_user.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = User.authenticate(db.session.query,
+                request.form['user_name'])
+        if user != None:
+            session['user_id'] = user.id
+            flash('You were logged in')
+            return render_template('index.html', current_user = user.name)
+        else:
+            flash('Invalid your name')
+    return render_template('login.html')

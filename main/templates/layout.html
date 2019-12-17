@@ -8,7 +8,8 @@
   {% endfor %}
   <h1>Attendance-Checker</h1>
   <a href="{{ url_for('index') }}">home</a><br>
-  <a href="{{ url_for('new_user') }}">create new user</a>
+  <a href="{{ url_for('new_user') }}">create new user</a><br>
+  <a href="{{url_for('login')}}">login</a>
   {% block body %}{% endblock %}
 </div>
 </html>

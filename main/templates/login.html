@@ -1,0 +1,16 @@
+{% block body %}
+<h2>Login<h2>
+    <form action="{{url_for('login')}}", method="post">
+
+      <div>
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="user_name">
+      </div>
+
+      <div class="button">
+        <button type="submit">Login</button>
+      </div>
+
+    </form>
+
+{% endblock %}
