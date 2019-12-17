@@ -30,6 +30,21 @@ def user_detail(user_id):
     user = User.query.get(user_id)
     return render_template('user_detail.html', user = user)
 
+@app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
+def edit_user(user_id):
+    user = User.query.get(user_id)
+    if request.method == 'POST':
+        user_name = request.form['user_name']
+        if user_name == "" :
+            return render_template('user_edit.html', user = user)
+        else :
+            user.name = request.form['user_name']
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('user_detail', user_id = user.id))
+
+    return render_template('user_edit.html', user = user)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
