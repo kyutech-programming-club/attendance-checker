@@ -3,7 +3,13 @@
 <title>Attendance-Checker</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <div class=page>
+  {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+  {% endfor %}
   <h1>Attendance-Checker</h1>
+  <a href="{{ url_for('index') }}">home</a><br>
+  <a href="{{ url_for('new_user') }}">create new user</a><br>
+  <a href="{{url_for('login')}}">login</a>
   {% block body %}{% endblock %}
 </div>
 </html>
