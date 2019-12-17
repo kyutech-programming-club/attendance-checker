@@ -6,10 +6,17 @@
   {% for message in get_flashed_messages() %}
     <div class=flash>{{ message }}</div>
   {% endfor %}
+
   <h1>Attendance-Checker</h1>
   <a href="{{ url_for('index') }}">home</a><br>
   <a href="{{ url_for('new_user') }}">create new user</a><br>
-  <a href="{{url_for('login')}}">login</a>
+
+  {% if session.user_id %}
+    <p>now user id is {{session.user_id}}</p>
+  {% else %}
+    <a href="{{ url_for('login') }}">login</a>
+  {% endif %}
+
   {% block body %}{% endblock %}
 </div>
 </html>
