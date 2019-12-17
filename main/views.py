@@ -37,3 +37,9 @@ def login():
         else:
             flash('Invalid your name')
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You were logged out')
+    return redirect(url_for('index'))

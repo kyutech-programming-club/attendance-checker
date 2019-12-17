@@ -12,7 +12,8 @@
   <a href="{{ url_for('new_user') }}">create new user</a><br>
 
   {% if session.user_id %}
-    <p>now user id is {{session.user_id}}</p>
+   <p>now user id is {{session.user_id}}</p>
+   <a href="{{ url_for('logout') }}">logout</a>
   {% else %}
     <a href="{{ url_for('login') }}">login</a>
   {% endif %}
