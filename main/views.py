@@ -25,6 +25,26 @@ def new_user():
             return redirect(url_for('index'))
     return render_template('new_user.html')
 
+@app.route('/users/<int:user_id>')
+def user_detail(user_id):
+    user = User.query.get(user_id)
+    return render_template('user_detail.html', user = user)
+
+@app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
+def edit_user(user_id):
+    user = User.query.get(user_id)
+    if request.method == 'POST':
+        user_name = request.form['user_name']
+        if user_name == "" :
+            return render_template('user_edit.html', user = user)
+        else :
+            user.name = request.form['user_name']
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('user_detail', user_id = user.id))
+
+    return render_template('user_edit.html', user = user)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -33,7 +53,13 @@ def login():
         if user != None:
             session['user_id'] = user.id
             flash('You were logged in')
-            return render_template('index.html', current_user = user.name)
+            return redirect(url_for('index'))
         else:
             flash('Invalid your name')
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You were logged out')
+    return redirect(url_for('index'))
