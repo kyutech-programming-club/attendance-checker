@@ -5,15 +5,15 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, default = 'proken-taro', nullable = False)
+    active = db.Column(db.Boolean, nullable=False, default=False)
     dates = db.relationship("Date", lazy="select", backref=db.backref("user", lazy='joined'))
-
     @classmethod
     def authenticate(cls, query, name):
         user = query(cls).filter(cls.name==name).first()
         return user
 
     def __repr__(self):
-        return '<User id={self.id} name={self.name!r}>'.format(self=self)
+        return '<User id={self.id} name={self.name!r} active={self.active}>'.format(self=self)
 
 class Date(db.Model):
     __tablename__ = "dates"
