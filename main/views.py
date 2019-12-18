@@ -92,3 +92,15 @@ def attend():
     message = make_attend_msg(session['user_id'])
     
     return render_template('attend.html', message=message)
+
+@app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
+def raspy(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    user.active = not user.active
+    date = Date(user_id=user_id, time=datetime.datetime.today())
+    db.session.add(user)
+    db.session.add(date)
+    db.session.commit()
+
+    return '1'
+
