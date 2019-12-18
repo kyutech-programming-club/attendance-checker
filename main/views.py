@@ -10,6 +10,14 @@ def save_user(user_name):
     print("save new user:", user_name)
     flash("save new user successfully")
 
+def make_attend_msg(user_id):
+    message = "Attend now!!"
+
+    if User.query.filter_by(id=user_id).first().active:
+        message = "Finish work"
+
+    return message
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -67,22 +75,19 @@ def logout():
 
 @app.route('/attend', methods=['GET', 'POST'])
 def attend():
-
     if request.method == 'POST':
         now = datetime.datetime.today()
         date = Date(user_id=session['user_id'], time=now)
+        user = User.query.filter(User.id==session['user_id']).first()
+        user.active = not user.active
         db.session.add(date)
+        db.session.add(user)
         db.session.commit()
+
         print("Date saved!")
     
-    users = []
-    now = datetime.datetime.today()
-    dates = Date.query.all()
-    for date in dates:
-        if date.time.day == now.day:
-            user = User.query.filter_by(id=date.user_id).first()
-            if user not in users:
-                users.append(user)
+    message = make_attend_msg(session['user_id'])
+    users = User.query.filter(User.active==True).all()
     
     print(users)
-    return render_template('attend.html', users = users)
+    return render_template('attend.html', users=users, message=message)
