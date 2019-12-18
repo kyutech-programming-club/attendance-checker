@@ -74,5 +74,15 @@ def attend():
         db.session.add(date)
         db.session.commit()
         print("Date saved!")
-
-    return render_template('attend.html')
+    
+    users = []
+    now = datetime.datetime.today()
+    dates = Date.query.all()
+    for date in dates:
+        if date.time.day == now.day:
+            user = User.query.filter_by(id=date.user_id).first()
+            if user not in users:
+                users.append(user)
+    
+    print(users)
+    return render_template('attend.html', users = users)
