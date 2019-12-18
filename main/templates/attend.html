@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h2>Attend</h2>
+<form action="{{url_for('attend')}}", method="post">
+  <button type="submit">Attend Now !!</button>
+</form>
+
+
+{% endblock%}

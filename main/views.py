@@ -1,6 +1,7 @@
 from flask import request, redirect, url_for, render_template, flash, session
 from main import app, db
-from main.models import User
+from main.models import User, Date
+import datetime
 
 def save_user(user_name):
     user = User(name = user_name)
@@ -53,7 +54,7 @@ def login():
         if user != None:
             session['user_id'] = user.id
             flash('You were logged in')
-            return redirect(url_for('index'))
+            return redirect(url_for('attend'))
         else:
             flash('Invalid your name')
     return render_template('login.html')
@@ -63,3 +64,15 @@ def logout():
     session.pop('user_id', None)
     flash('You were logged out')
     return redirect(url_for('index'))
+
+@app.route('/attend', methods=['GET', 'POST'])
+def attend():
+
+    if request.method == 'POST':
+        now = datetime.datetime.today()
+        date = Date(user_id=session['user_id'], time=now)
+        db.session.add(date)
+        db.session.commit()
+        print("Date saved!")
+
+    return render_template('attend.html')
