@@ -20,7 +20,8 @@ def make_attend_msg(user_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    users = User.query.filter_by(active=True).all()
+    return render_template('index.html', users=users)
 
 @app.route('/users/create', methods=['GET', 'POST'])
 def new_user():
@@ -85,9 +86,9 @@ def attend():
         db.session.commit()
 
         print("Date saved!")
+        flash("Thank You !!")
+        return redirect(url_for('index'))
     
     message = make_attend_msg(session['user_id'])
-    users = User.query.filter(User.active==True).all()
     
-    print(users)
-    return render_template('attend.html', users=users, message=message)
+    return render_template('attend.html', message=message)
