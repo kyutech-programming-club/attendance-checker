@@ -20,10 +20,11 @@ class Date(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    time = db.Column(db.DateTime)
+    start = db.Column(db.DateTime, nullable=True)
+    end = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
-        return '<Id={self.id} User id={self.user_id} time={self.time}>'.format(self=self)
+        return '<Id={self.id} User id={self.user_id} start={self.start} end={self.end}>'.format(self=self)
 
 def init():
     db.create_all()
