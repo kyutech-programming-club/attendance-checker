@@ -32,10 +32,9 @@ def count_user():
             print(user, date)
     return count
 
-
 def calc_time_diff(t1, t2):
     td = t2 - t1
-    return int(td.seconds / 10800 * 10)
+    return int(td.seconds / 3600)
 
 def make_record(user_id):
     record = {}
@@ -43,6 +42,28 @@ def make_record(user_id):
         record.setdefault(int(date.start.timestamp()), calc_time_diff(date.start, date.end))
 
     return record
+
+def get_seven_data(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    dates = user.dates
+    start_times = []
+    for st in dates:
+        start_times.append(st.start)
+
+    start_times = sorted(start_times, reverse=True)
+
+    return start_times[:7]
+
+def decide_sound_level(start_times):
+    sound_level = 1
+    date = start_times[0]
+    for i in (range(1, 7)):
+        if start_times[i].date() == date.date() - datetime.timedelta(days=1):
+            date = start_times[i]
+            sound_level += 1
+        else:
+            break
+    return sound_level
 
 @app.route('/')
 def index():
@@ -124,11 +145,23 @@ def attend():
 @app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
 def raspy(user_id):
     user = User.query.filter_by(id=user_id).first()
+    time = datetime.datetime.today()
+    if user.active:
+        date = Date.query.filter_by(user_id=user_id).first()
+        date.end = time
+    else:
+        date = Date(user_id=user_id, start=time)
+
     user.active = not user.active
-    date = Date(user_id=user_id, time=datetime.datetime.today())
     db.session.add(user)
     db.session.add(date)
     db.session.commit()
 
-    return '1'
+    record={
+            'user_id' : user_id,
+            'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
+            'sound' : decide_sound_level( get_seven_data(user_id))
+            }
+
+    return jsonify(record)
 
