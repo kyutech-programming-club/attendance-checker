@@ -9,15 +9,14 @@
 
   <h1>Attendance-Checker</h1>
   <a href="{{ url_for('index') }}">home</a><br>
-  <a href="{{ url_for('new_user') }}">create new user</a><br>
 
   {% if session.user_id %}
-   <p>now user id is {{session.user_id}}</p>
-   <a href="{{ url_for('user_detail', user_id = session.user_id)}}">Current User Id {{session.user_id}}</a><br>
-   <a href="{{ url_for('attend')}}">attend</a><br>
-   <a href="{{ url_for('logout') }}">logout</a><br>
+  <a href="{{ url_for('user_detail', user_id = session.user_id)}}">My Attend Data</a><br>
+   <!--<a href="{{ url_for('attend')}}">attend</a><br>-->
+  <a href="{{ url_for('logout') }}">logout</a><br>
   {% else %}
-    <a href="{{ url_for('login') }}">login</a>
+  <a href="{{ url_for('login') }}">login</a><br>
+  <a href="{{ url_for('new_user') }}">create new user</a><br>
   {% endif %}
 
   {% block body %}{% endblock %}

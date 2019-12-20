@@ -39,6 +39,8 @@ def calc_time_diff(t1, t2):
 def make_record(user_id):
     record = {}
     for date in Date.query.filter_by(user_id=user_id).all():
+        if date.end is None:
+            continue
         record.setdefault(int(date.start.timestamp()), calc_time_diff(date.start, date.end))
 
     return record
@@ -68,7 +70,7 @@ def decide_sound_level(start_times):
 @app.route('/')
 def index():
     active_users = User.query.filter_by(active=True).all()
-    all_user_num = count_user()
+    all_user_num = 4#count_user()
     return render_template('index.html', users=active_users, users_num=all_user_num )
 
 @app.route('/users/create', methods=['GET', 'POST'])
@@ -85,7 +87,7 @@ def new_user():
 
 @app.route('/users/<int:user_id>')
 def user_detail(user_id):
-    user = User.query.get(user_id)
+    user = User.query.filter_by(id=user_id).first()
     record = make_record(user_id)
     return render_template('user_detail.html', user = user, record=record)
 
@@ -112,7 +114,7 @@ def login():
         if user != None:
             session['user_id'] = user.id
             flash('You were logged in')
-            return redirect(url_for('attend'))
+            return redirect(url_for('index'))
         else:
             flash('Invalid your name')
     return render_template('login.html')
