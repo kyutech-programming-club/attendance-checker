@@ -1,6 +1,6 @@
 from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
-from main.models import User, Date
+from main.models import User, Date, Proken
 import datetime
 
 def save_user(user_name):
@@ -44,6 +44,17 @@ def make_record(user_id):
         record.setdefault(int(date.start.timestamp()), calc_time_diff(date.start, date.end))
 
     return record
+
+def make_proken():
+    record = {}
+    for proken in Proken.query.all():
+        if proken is None:
+            continue
+        else :
+            record.setdefault(int(proken.day.timestamp()), proken.prokens)
+                
+    return record
+
 
 def get_seven_data(user_id):
     user = User.query.filter_by(id=user_id).first()
@@ -109,7 +120,19 @@ def edit_user(user_id):
 @app.route('/users/')
 def user_list():
     users = User.query.all()
-    return render_template('user_list.html', users=users)
+    today = datetime.datetime.today()
+    today = datetime.datetime(today.year, today.month, today.day)
+    proken = Proken.query.filter_by(day=today).first()
+    if proken is None:
+        proken = Proken(day=today, prokens=1)
+    else:
+        proken.prokens += 1
+
+    record = make_proken()
+
+    db.session.add(proken)
+    db.session.commit()
+    return render_template('user_list.html', users=users, record=record)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
