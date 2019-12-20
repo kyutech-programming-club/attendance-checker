@@ -8,5 +8,6 @@
   <li><a href="{{ url_for('user_detail', user_id=user.id) }}">{{user.name}}</a></li>
 </ul>
 {% endfor %}
-
+<h2>Total of Today's Member</h2>
+{{users_num}}
 {% endblock %}
