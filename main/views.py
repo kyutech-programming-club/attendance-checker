@@ -18,6 +18,21 @@ def make_attend_msg(user_id):
 
     return message
 
+def count_user():
+    count = 0
+    today = datetime.datetime.today()
+    today = str(today.year)+str(today.month)+str(today.day)
+    dates = Date.query.filter().all()
+    for date in dates:
+        user = User.query.filter_by(id=date.user_id).first()
+        date = date.start
+        date = str(date.year)+str(date.month)+str(date.day)
+        if date == today:
+            count+=1
+            print(user, date)
+    return count
+
+
 def calc_time_diff(t1, t2):
     td = t2 - t1
     return int(td.seconds / 10800 * 10)
@@ -31,8 +46,9 @@ def make_record(user_id):
 
 @app.route('/')
 def index():
-    users = User.query.filter_by(active=True).all()
-    return render_template('index.html', users=users)
+    active_users = User.query.filter_by(active=True).all()
+    all_user_num = count_user()
+    return render_template('index.html', users=active_users, users_num=all_user_num )
 
 @app.route('/users/create', methods=['GET', 'POST'])
 def new_user():
@@ -90,7 +106,7 @@ def logout():
 def attend():
     if request.method == 'POST':
         now = datetime.datetime.today()
-        date = Date(user_id=session['user_id'], time=now)
+        date = Date(user_id=session['user_id'], start=now)
         user = User.query.filter(User.id==session['user_id']).first()
         user.active = not user.active
         db.session.add(date)
