@@ -9,7 +9,7 @@
 
   <h1>Attendance-Checker</h1>
   <a href="{{ url_for('index') }}">home</a><br>
-
+  <a href="{{ url_for('user_list') }}">users list</a><br>
   {% if session.user_id %}
   <a href="{{ url_for('user_detail', user_id = session.user_id)}}">My Attend Data</a><br>
    <!--<a href="{{ url_for('attend')}}">attend</a><br>-->

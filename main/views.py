@@ -106,6 +106,11 @@ def edit_user(user_id):
 
     return render_template('user_edit.html', user = user)
 
+@app.route('/users/')
+def user_list():
+    users = User.query.all()
+    return render_template('user_list.html', users=users)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
