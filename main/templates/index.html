@@ -2,6 +2,11 @@
 
 {% block body %}
 
-<h2>Home</h2>
+<h2>Active Members</h2>
+{% for user in users%}
+<ul>
+  <li><a href="{{ url_for('user_detail', user_id=user.id) }}">{{user.name}}</a></li>
+</ul>
+{% endfor %}
 
 {% endblock %}
