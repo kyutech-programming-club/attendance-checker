@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, flash, session
+from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
 from main.models import User, Date
 import datetime
@@ -17,6 +17,17 @@ def make_attend_msg(user_id):
         message = "Finish work"
 
     return message
+
+def calc_time_diff(t1, t2):
+    td = t2 - t1
+    return int(td.seconds / 10800 * 10)
+
+def make_record(user_id):
+    record = {}
+    for date in Date.query.filter_by(user_id=user_id).all():
+        record.setdefault(int(date.start.timestamp()), calc_time_diff(date.start, date.end))
+
+    return record
 
 @app.route('/')
 def index():
@@ -38,7 +49,8 @@ def new_user():
 @app.route('/users/<int:user_id>')
 def user_detail(user_id):
     user = User.query.get(user_id)
-    return render_template('user_detail.html', user = user)
+    record = make_record(user_id)
+    return render_template('user_detail.html', user = user, record=record)
 
 @app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 def edit_user(user_id):
