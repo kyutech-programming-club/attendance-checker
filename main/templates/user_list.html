@@ -5,15 +5,16 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.css" />
 
-  <h2>Users</h2> 
+  <h2>メンバー</h2> 
 
   <ul>
   {% for user in users %}
-  <li><a href="{{ url_for('user_detail', user_id=user.id) }}">{{ user.id }}</a></li>
+  <li><a href="{{ url_for('user_detail', user_id=user.id) }}">{{ user.name }}</a></li>
   {% endfor %}
   </ul>
 
-  <div id="sample-heatmap"></div>
+
+<div id="sample-heatmap"></div>
 
 <script type="text/javascript">
   var cal = new CalHeatMap();
@@ -32,5 +33,6 @@
    });
 </script>
 
-  <a href="{{ url_for('new_user') }}">create user</a>
+  <a href="{{ url_for('new_user') }}">新規登録</a>
+
 {% endblock body %}
