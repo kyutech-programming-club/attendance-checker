@@ -1,13 +1,17 @@
 {% extends "layout.html" %}
 
 {% block body %}
-
-<h2>Active Members</h2>
-{% for user in users%}
-<ul>
-  <li><a href="{{ url_for('user_detail', user_id=user.id) }}">{{user.name}}</a></li>
-</ul>
-{% endfor %}
-<h2>Total of Today's Member</h2>
-{{users_num}}
-{% endblock %}
+<br><br><br><br><br>
+  <h2>活動人数</h2>
+  {% if session.users %}
+  {% for user in users%}
+  <ul>
+    <li><a href="{{ url_for('user_detail', user_id=user.id) }}">{{user.name}}</a></li>
+  </ul>
+  {% endfor %}
+  {% else %}
+  <div>現在活動している人はいません</div>
+  {% endif %}<br><br><br><br><br>
+  <h2>今日の活動人数の合計</h2>
+  {{users_num}}人
+  {% endblock %}
