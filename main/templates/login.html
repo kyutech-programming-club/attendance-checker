@@ -1,16 +1,18 @@
+{% extends 'layout.html' %}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
 {% block body %}
-<h2>Login<h2>
-    <form action="{{url_for('login')}}", method="post">
-
-      <div>
-        <label for="name">Your Name</label>
-        <input type="text" id="name" name="user_name">
-      </div>
-
-      <div class="button">
-        <button type="submit">Login</button>
-      </div>
-
-    </form>
-
+<form action="{{url_for('login')}}", method="post">
+  
+  <div>
+    <label for="name">名前</label>
+    <input type="text" id="name" name="user_name">
+  </div>
+  
+  <div class="button">
+    <button type="submit" class="btn　btn-success">ログイン</button>
+  </div>
+  
+</form>
 {% endblock %}

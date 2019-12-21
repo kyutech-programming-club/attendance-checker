@@ -1,16 +1,16 @@
 {% extends 'layout.html'%}
 
 {% block body %}
-<h2>New User<h2>
+<h2>新規登録<h2>
     <form action="{{url_for('new_user')}}", method="post">
    
       <div>
-        <label for="name">Name</label>
+        <label for="name">名前</label>
         <input type="text" id="name" name="user_name">
       </div>
    
       <div class="button">
-        <button type="submit">Create User</button>
+        <button type="submit" class="btn btn-primary">登録</button>
       </div>
 
     </form>

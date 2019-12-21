@@ -1,24 +1,29 @@
 <!DOCTYPE html>
 <html>
-<title>Attendance-Checker</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+  <title>出欠管理アプリ</title>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 <div class=page>
   {% for message in get_flashed_messages() %}
     <div class=flash>{{ message }}</div>
   {% endfor %}
 
-  <h1>Attendance-Checker</h1>
-  <a href="{{ url_for('index') }}">home</a><br>
-  <a href="{{ url_for('user_list') }}">users list</a><br>
-  {% if session.user_id %}
-  <a href="{{ url_for('user_detail', user_id = session.user_id)}}">My Attend Data</a><br>
-   <!--<a href="{{ url_for('attend')}}">attend</a><br>-->
-  <a href="{{ url_for('logout') }}">logout</a><br>
-  {% else %}
-  <a href="{{ url_for('login') }}">login</a><br>
-  <a href="{{ url_for('new_user') }}">create new user</a><br>
-  {% endif %}
-
+    <div class="bgcolor">
+      <div class="title" onclick="location.href='/'">出欠管理アプリ</div>
+      <div style="float:right;">
+        <button onclick="location.href='/users'" class="btn btn-primary">メンバー</button>
+        {% if session.user_id %}
+        <button onclick="location.href='/logout'" class="btn btn-danger">ログアウト</button>
+        {% else %}
+        <button onclick="location.href='/login'" class="btn btn-success" style="">ログイン</button>
+        <button onclick="location.href='/users/create'" class="btn btn-info">新規登録</button>
+        {% endif %}
+      </div>
+    </div>
+    {% if session.user_id %}
+    <button onclick="location.href='/users/{{session.user_id}}'" class="btn btn-primary">プロフィール</button><br><br>
+    <!--<a href="{{ url_for('attend')}}">attend</a><br>-->
+    {% endif %}
   {% block body %}{% endblock %}
 </div>
 </html>
