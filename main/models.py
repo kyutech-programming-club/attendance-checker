@@ -26,5 +26,15 @@ class Date(db.Model):
     def __repr__(self):
         return '<Id={self.id} User id={self.user_id} start={self.start} end={self.end}>'.format(self=self)
 
+class Proken(db.Model):
+    __tablename__ = "prokens"
+
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.DateTime)
+    prokens = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<Id={self.id} Day={self.day} Prokens={self.prokens}>'.format(self=self)
+
 def init():
     db.create_all()
