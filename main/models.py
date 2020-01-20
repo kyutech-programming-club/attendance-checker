@@ -50,9 +50,10 @@ class Date(db.Model):
                             lazy="select",
                             backref=db.backref("date", lazy='joined')
                             )
+    members = db.Column(db.Integer, default=0, nullable=True)
 
     def __repr__(self):
-        return '<Id={self.date_id} day={self.day}>'.format(self=self)
+        return '<Id={self.date_id} day={self.day} members={self.members}>'.format(self=self)
 
 class Time(db.Model):
     __tablename__ = "times"

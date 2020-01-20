@@ -1,6 +1,6 @@
 from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
-from main.models import User, Date, Proken
+from main.models import User, Date
 import datetime
 
 def save_user(user_name):

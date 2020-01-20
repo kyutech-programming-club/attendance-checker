@@ -1,4 +1,4 @@
-from main.models import db, User, Date, Time, Proken, init
+from main.models import db, User, Date, Time, init
 import datetime
 from random import randint, sample 
 
@@ -51,8 +51,8 @@ def make_proken():
                 continue
             members += 1
             
-        proken = Proken(date_id=date.date_id, members=members)
-        db.session.add(proken)
+        date.members = members
+        db.session.add(date)
 
     db.session.commit()
 
@@ -72,8 +72,7 @@ if __name__ == '__main__':
             print(user.name, ":", time.start.hour, "~", time.end.hour)
 
     '''
-    for proken in Proken.query.all():
-        day = Date.query.filter_by(date_id=proken.date_id).first()
-        print(day.day, ":", proken.members)
+    for date in Date.query.all():
+        print(date.day, ":", date.members)
 
 
