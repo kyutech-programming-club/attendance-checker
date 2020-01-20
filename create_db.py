@@ -1,4 +1,4 @@
-from main.models import db, User, Date, init
+from main.models import db, User, Date, Time, init
 import datetime
 from random import randint, sample 
 
@@ -27,8 +27,33 @@ def make_ralation():
         
         db.session.commit()
 
+def make_time():
+    users = User.query.all()
+    dates = Date.query.all()
+    
+    for user in users:
+        for date in user.dates:
+
+            s = datetime.time(randint(15, 18), 0, 0)
+            e = datetime.time(randint(19, 22), 0, 0)
+            start = datetime.datetime.combine(date.day, s)
+            end = datetime.datetime.combine(date.day, e)
+            t = Time(user=user, date=date, start=start, end=end)
+            db.session.add(t)
+
+    db.session.commit()
+
 if __name__ == '__main__':
-#    init()
-#    make_user()
-#    make_date()
-#    make_ralation()
+    init()
+    make_user()
+    make_date()
+    make_ralation()
+    make_time()
+
+    for date in Date.query.all():
+        print(date.day, "の活動")
+        for user in date.users:
+            time = Time.query.filter_by(user_id=user.user_id).filter_by(date_id=date.date_id).first()
+            print(user.name, ":", time.start.hour, "~", time.end.hour)
+
+

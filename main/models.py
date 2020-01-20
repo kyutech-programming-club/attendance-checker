@@ -23,6 +23,10 @@ class User(db.Model):
                             lazy='subquery', 
                             backref=db.backref('subscribers', lazy='dynamic')
                             )
+    times = db.relationship("Time",
+                            lazy="select",
+                            backref=db.backref("user", lazy='joined')
+                            )
 
     @classmethod
     def authenticate(cls, query, name):
@@ -42,9 +46,25 @@ class Date(db.Model):
                             lazy='subquery',
                             backref=db.backref('subscribers', lazy='dynamic')
                             )
+    times = db.relationship("Time",
+                            lazy="select",
+                            backref=db.backref("date", lazy='joined')
+                            )
 
     def __repr__(self):
         return '<Id={self.date_id} day={self.day}>'.format(self=self)
+
+class Time(db.Model):
+    __tablename__ = "times"
+
+    time_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    date_id = db.Column(db.Integer, db.ForeignKey('dates.date_id'))
+    start = db.Column(db.DateTime, nullable=True)
+    end = db.Column(db.DateTime, nullable=True)
+    
+    def __repr__(self):
+        return '<Id={self.time_id} u_id={self.user_id} d_id={self.date_id} start={self.start} end={self.end}>'.format(self=self)
 
 class Proken(db.Model):
     __tablename__ = "prokens"
