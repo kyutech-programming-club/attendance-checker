@@ -11,7 +11,7 @@ def make_user():
 
 def make_date():
     d = datetime.datetime(2019, 1, 1)
-    while d <= datetime.datetime(2019, 12, 31):
+    while d <= datetime.datetime(2020, 12, 31):
         day = Date(day=d)
         db.session.add(day)
         d += datetime.timedelta(days=1)
@@ -57,12 +57,12 @@ def make_proken():
     db.session.commit()
 
 if __name__ == '__main__':
-#    init()
-#    make_user()
-#    make_date()
-#    make_ralation()
-#    make_time()
-#    make_proken()
+    init()
+    make_user()
+    make_date()
+    make_ralation()
+    make_time()
+    make_proken()
 
     '''
     for date in Date.query.all():
