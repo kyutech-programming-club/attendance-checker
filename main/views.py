@@ -3,8 +3,8 @@ from main import app, db
 from main.models import User, Date, Time
 import datetime
 
-def save_user(user_name):
-    user = User(name = user_name)
+def save_new_user(user_name):
+    user = User(name=user_name)
     db.session.add(user)
     db.session.commit()
     print("save new user:", user_name)
@@ -106,8 +106,9 @@ def new_user():
         if user_name == "" :
             return render_template('new_user.html')
         else :
-            save_user(user_name)
+            save_new_user(user_name)
             return redirect(url_for('index'))
+
     return render_template('new_user.html')
 
 @app.route('/users/<int:user_id>')
