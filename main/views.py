@@ -54,13 +54,10 @@ def make_record(user_id):
 
     return record
 
-def make_proken():
+def proken_record_maker():
     record = {}
-    for proken in Proken.query.all():
-        if proken is None:
-            continue
-        else :
-            record.setdefault(int(proken.day.timestamp()), proken.prokens)
+    for date in Date.query.all():
+        record.setdefault(int(date.day.timestamp()), date.members)
                 
     return record
 
@@ -129,18 +126,8 @@ def edit_user(user_id):
 @app.route('/users/')
 def user_list():
     users = User.query.all()
-    today = datetime.datetime.today()
-    today = datetime.datetime(today.year, today.month, today.day)
-    proken = Proken.query.filter_by(day=today).first()
-    if proken is None:
-        proken = Proken(day=today, prokens=1)
-    else:
-        proken.prokens += 1
+    record = proken_record_maker()
 
-    record = make_proken()
-
-    db.session.add(proken)
-    db.session.commit()
     return render_template('user_list.html', users=users, record=record)
 
 @app.route('/login', methods=['GET', 'POST'])
