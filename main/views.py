@@ -24,14 +24,20 @@ def get_today():
 
     return today
 
+def new_date_make(date):
+    new_date = Date(day=date, members=0)
+    db.session.add(new_date)
+    db.session.commit()
+
 def count_member():
     today = get_today()
-    
+    member_num = 0
     date = Date.query.filter_by(day=today).first()
+
     if date is None :
-        member_num = 0
+        new_date_make()
     else :
-        member_num = len(date.users)
+        member_num = date.members
 
     return member_num
 
