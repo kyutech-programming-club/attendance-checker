@@ -44,7 +44,7 @@ class Date(db.Model):
                             )
 
     def __repr__(self):
-        return '<Id={self.date_id} date={self.day}>'.format(self=self)
+        return '<Id={self.date_id} day={self.day}>'.format(self=self)
 
 class Proken(db.Model):
     __tablename__ = "prokens"

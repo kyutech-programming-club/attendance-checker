@@ -1,46 +1,34 @@
-from main.models import db, User, Date, init, Proken
+from main.models import db, User, Date, init
 import datetime
-from random import randint
+from random import randint, sample 
 
-init()
-
-for i in range(1, 11):
-    user = User(name=str(i))
-    db.session.add(user)
+def make_user():
+    for i in range(1, 11):
+        user = User(name=str(i))
+        db.session.add(user)
+    
     db.session.commit()
 
-for user in User.query.all():
-    user_mind = randint(11, 17)
-    for month in range(1, 12):
-        for day in range(1, 29):
-            st = randint(11, 17)
-            ed = randint(17, 21)
-
-            if st < user_mind:
-                continue
-
-            st_time = datetime.datetime(2019, month, day, st)
-            ed_time = datetime.datetime(2019, month, day, ed)
-
-            date = Date(user_id=user.id, start=st_time, end=ed_time)
-            db.session.add(date)
-            db.session.commit()
-
-dates = Date.query.order_by(Date.end).all()
-days = []
-for date in dates:
-    days.append(date.end.date())
-days_set = set(days)
-days_list = list(days_set)
-days_list = sorted(days_list)
-for day in days_list:
-    db_day = day
-    db_prokens = days.count(day)
-    prokens = Proken(day=db_day, prokens=db_prokens)
-    db.session.add(prokens)
+def make_date():
+    d = datetime.datetime(2019, 1, 1)
+    while d <= datetime.datetime(2019, 12, 31):
+        day = Date(day=d)
+        db.session.add(day)
+        d += datetime.timedelta(days=1)
+    
     db.session.commit()
 
-for proken in Proken.query.all():
-    print(proken)
+def make_ralation():
+    users = User.query.all()
+    for day in Date.query.all():
+        user = sample(users, randint(1, 10))
+        for u in user:
+            day.subscribers.append(u)
+        
+        db.session.commit()
 
-
+if __name__ == '__main__':
+#    init()
+#    make_user()
+#    make_date()
+#    make_ralation()
