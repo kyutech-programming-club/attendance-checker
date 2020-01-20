@@ -143,12 +143,14 @@ def login():
     if request.method == 'POST':
         user = User.authenticate(db.session.query,
                 request.form['user_name'])
-        if user != None:
-            session['user_id'] = user.id
+        if user is None:
+            flash('Invalid your name')
+
+        else :
+            session['user_id'] = user.user_id
             flash('You were logged in')
             return redirect(url_for('index'))
-        else:
-            flash('Invalid your name')
+
     return render_template('login.html')
 
 @app.route('/logout')
