@@ -1,4 +1,4 @@
-from main.models import db, User, Date, Time, init
+from main.models import db, User, Date, Time, Proken, init
 import datetime
 from random import randint, sample 
 
@@ -43,17 +43,37 @@ def make_time():
 
     db.session.commit()
 
-if __name__ == '__main__':
-    init()
-    make_user()
-    make_date()
-    make_ralation()
-    make_time()
+def make_proken():
+    for date in Date.query.all():
+        members = 0
+        for user in date.users:
+            if user is None:
+                continue
+            members += 1
+            
+        proken = Proken(date_id=date.date_id, members=members)
+        db.session.add(proken)
 
+    db.session.commit()
+
+if __name__ == '__main__':
+#    init()
+#    make_user()
+#    make_date()
+#    make_ralation()
+#    make_time()
+#    make_proken()
+
+    '''
     for date in Date.query.all():
         print(date.day, "の活動")
         for user in date.users:
             time = Time.query.filter_by(user_id=user.user_id).filter_by(date_id=date.date_id).first()
             print(user.name, ":", time.start.hour, "~", time.end.hour)
+
+    '''
+    for proken in Proken.query.all():
+        day = Date.query.filter_by(date_id=proken.date_id).first()
+        print(day.day, ":", proken.members)
 
 

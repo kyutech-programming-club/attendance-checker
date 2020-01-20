@@ -69,12 +69,12 @@ class Time(db.Model):
 class Proken(db.Model):
     __tablename__ = "prokens"
 
-    id = db.Column(db.Integer, primary_key=True)
-    day = db.Column(db.DateTime)
-    prokens = db.Column(db.Integer)
+    proken_id = db.Column(db.Integer, primary_key=True)
+    date_id = db.Column(db.Integer)
+    members = db.Column(db.Integer)
 
     def __repr__(self):
-        return '<Id={self.id} Day={self.day} Prokens={self.prokens}>'.format(self=self)
+        return '<Id={self.proken_id} d_id={self.date_id} members={self.members}>'.format(self=self)
 
 def init():
     db.create_all()
