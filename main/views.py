@@ -18,19 +18,17 @@ def make_attend_msg(user_id):
 
     return message
 
-def count_user():
-    count = 0
-    today = datetime.datetime.today()
-    today = str(today.year)+str(today.month)+str(today.day)
-    dates = Date.query.filter().all()
-    for date in dates:
-        user = User.query.filter_by(id=date.user_id).first()
-        date = date.start
-        date = str(date.year)+str(date.month)+str(date.day)
-        if date == today:
-            count+=1
-            print(user, date)
-    return count
+def count_member():
+    today_date = datetime.date.today() #date
+    today = datetime.datetime(*today_date.timetuple()[:3]) #datetime
+    
+    date = Date.query.filter_by(day=today).first()
+    if date is None :
+        member_num = 0
+    else :
+        member_num = len(date.users)
+
+    return member_num
 
 def calc_time_diff(t1, t2):
     td = t2 - t1
@@ -81,7 +79,7 @@ def decide_sound_level(start_times):
 @app.route('/')
 def index():
     active_users = User.query.filter_by(active=True).all()
-    all_user_num = 4#count_user()
+    all_user_num = count_member()
     return render_template('index.html', users=active_users, users_num=all_user_num )
 
 @app.route('/users/create', methods=['GET', 'POST'])
