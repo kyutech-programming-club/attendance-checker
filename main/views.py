@@ -1,6 +1,6 @@
 from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
-from main.models import User, Date
+from main.models import User, Date, Time
 import datetime
 
 def save_user(user_name):
@@ -41,16 +41,24 @@ def count_member():
 
     return member_num
 
-def calc_time_diff(t1, t2):
-    td = t2 - t1
-    return int(td.seconds / 3600)
+def calc_time_diff(start, end):
+    time_diff = end - start
+    return int(time_diff.seconds / 3600)
 
-def make_record(user_id):
+def get_date(datetime_obj):
+    date = datetime.datetime(*datetime_obj.timetuple()[:3])
+    return date
+
+def user_record_maker(user_id):
     record = {}
-    for date in Date.query.filter_by(user_id=user_id).all():
-        if date.end is None:
-            continue
-        record.setdefault(int(date.start.timestamp()), calc_time_diff(date.start, date.end))
+    user = User.query.filter_by(user_id=user_id).first()
+    times = Time.query.filter_by(user_id=user_id).all()
+
+    for time in times :
+        date = get_date(time.start)
+        work_time = calc_time_diff(time.start, time.end)
+        
+        record.setdefault(int(date.timestamp()), work_time)
 
     return record
 
@@ -104,8 +112,8 @@ def new_user():
 
 @app.route('/users/<int:user_id>')
 def user_detail(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    record = make_record(user_id)
+    user = User.query.filter_by(user_id=user_id).first()
+    record = user_record_maker(user_id)
     return render_template('user_detail.html', user = user, record=record)
 
 @app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
