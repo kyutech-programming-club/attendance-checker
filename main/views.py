@@ -118,7 +118,7 @@ def user_detail(user_id):
 
 @app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 def edit_user(user_id):
-    user = User.query.get(user_id)
+    user = User.query.filter_by(user_id=user_id).first()
     if request.method == 'POST':
         user_name = request.form['user_name']
         if user_name == "" :
@@ -127,7 +127,7 @@ def edit_user(user_id):
             user.name = request.form['user_name']
             db.session.add(user)
             db.session.commit()
-            return redirect(url_for('user_detail', user_id = user.id))
+            return redirect(url_for('user_detail', user_id = user.user_id))
 
     return render_template('user_edit.html', user = user)
 
