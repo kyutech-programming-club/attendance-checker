@@ -18,9 +18,14 @@ def make_attend_msg(user_id):
 
     return message
 
+def get_today():
+    today_date = datetime.date.today()
+    today = datetime.datetime(*today_date.timetuple()[:3])
+
+    return today
+
 def count_member():
-    today_date = datetime.date.today() #date
-    today = datetime.datetime(*today_date.timetuple()[:3]) #datetime
+    today = get_today()
     
     date = Date.query.filter_by(day=today).first()
     if date is None :
