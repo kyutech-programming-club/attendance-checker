@@ -10,14 +10,6 @@ def save_new_user(user_name):
     print("save new user:", user_name)
     flash("save new user successfully")
 
-def make_attend_msg(user_id):
-    message = "Attend now!!"
-
-    if User.query.filter_by(id=user_id).first().active:
-        message = "Finish work"
-
-    return message
-
 def get_today():
     today_date = datetime.date.today()
     today = datetime.datetime(*today_date.timetuple()[:3])
@@ -162,43 +154,40 @@ def logout():
 
 @app.route('/attend', methods=['GET', 'POST'])
 def attend():
+    users = User.query.all()
+    
     if request.method == 'POST':
-        now = datetime.datetime.today()
-        date = Date(user_id=session['user_id'], start=now)
-        user = User.query.filter(User.id==session['user_id']).first()
-        user.active = not user.active
-        db.session.add(date)
-        db.session.add(user)
-        db.session.commit()
-
         print("Date saved!")
         flash("Thank You !!")
-        return redirect(url_for('index'))
-    
-    message = make_attend_msg(session['user_id'])
-    
-    return render_template('attend.html', message=message)
+
+        return redirect(url_for('attend'))
+    else:
+        return render_template('attend.html', users=users)
 
 @app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
 def raspy(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    time = datetime.datetime.today()
-    if user.active:
-        date = Date.query.filter_by(user_id=user_id).first()
-        date.end = time
+    if request.method == 'POST':
+        user = User.query.filter_by(id=user_id).first()
+        time = datetime.datetime.today()
+        if user.active:
+            date = Date.query.filter_by(user_id=user_id).first()
+            date.end = time
+        else:
+            date = Date(user_id=user_id, start=time)
+
+        user.active = not user.active
+        db.session.add(user)
+        db.session.add(date)
+        db.session.commit()
+
+        record={
+                'user_id' : user_id,
+                'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
+                'sound' : decide_sound_level( get_seven_data(user_id))
+                }
+
+        return jsonify(record)
+
     else:
-        date = Date(user_id=user_id, start=time)
-
-    user.active = not user.active
-    db.session.add(user)
-    db.session.add(date)
-    db.session.commit()
-
-    record={
-            'user_id' : user_id,
-            'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
-            'sound' : decide_sound_level( get_seven_data(user_id))
-            }
-
-    return jsonify(record)
+        return redirect(url_for('attend'))
 

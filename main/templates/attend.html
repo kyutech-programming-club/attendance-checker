@@ -3,7 +3,25 @@
 {% block body %}
 <h2>Attend</h2>
 <form action="{{url_for('attend')}}", method="post">
-  <button type="submit">{{message}}</button>
+  <div>
+    <select name="users" size="1">
+      {% for user in users %}
+      <option>{{user.name}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div>
+    <label for="status">Status</label>
+    <input type="text" id="status" name="status", value="{{user_status}}">
+  </div>
+
+  <div>
+    <label for="time">Time</label>
+    <input type="datetime-local" id="time" name="time", value="{{now_time}}">
+  </div>
+
+  <button type="submit">submit</button>
 </form>
 
 {% endblock%}
