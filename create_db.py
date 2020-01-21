@@ -1,46 +1,78 @@
-from main.models import db, User, Date, init, Proken
+from main.models import db, User, Date, Time, init
 import datetime
-from random import randint
+from random import randint, sample 
 
-init()
-
-for i in range(1, 11):
-    user = User(name=str(i))
-    db.session.add(user)
+def make_user():
+    for i in range(1, 11):
+        user = User(name=str(i))
+        db.session.add(user)
+    
     db.session.commit()
 
-for user in User.query.all():
-    user_mind = randint(11, 17)
-    for month in range(1, 12):
-        for day in range(1, 29):
-            st = randint(11, 17)
-            ed = randint(17, 21)
+def make_date():
+    d = datetime.datetime(2019, 1, 1)
+    while d <= datetime.datetime(2020, 12, 31):
+        day = Date(day=d)
+        db.session.add(day)
+        d += datetime.timedelta(days=1)
+    
+    db.session.commit()
 
-            if st < user_mind:
+def make_ralation():
+    users = User.query.all()
+    for day in Date.query.all():
+        user = sample(users, randint(1, 10))
+        for u in user:
+            day.subscribers.append(u)
+        
+        db.session.commit()
+
+def make_time():
+    users = User.query.all()
+    dates = Date.query.all()
+    
+    for user in users:
+        for date in user.dates:
+
+            s = datetime.time(randint(15, 18), 0, 0)
+            e = datetime.time(randint(19, 22), 0, 0)
+            start = datetime.datetime.combine(date.day, s)
+            end = datetime.datetime.combine(date.day, e)
+            t = Time(user=user, date=date, start=start, end=end)
+            db.session.add(t)
+
+    db.session.commit()
+
+def make_proken():
+    for date in Date.query.all():
+        members = 0
+        for user in date.users:
+            if user is None:
                 continue
+            members += 1
+            
+        date.members = members
+        db.session.add(date)
 
-            st_time = datetime.datetime(2019, month, day, st)
-            ed_time = datetime.datetime(2019, month, day, ed)
-
-            date = Date(user_id=user.id, start=st_time, end=ed_time)
-            db.session.add(date)
-            db.session.commit()
-
-dates = Date.query.order_by(Date.end).all()
-days = []
-for date in dates:
-    days.append(date.end.date())
-days_set = set(days)
-days_list = list(days_set)
-days_list = sorted(days_list)
-for day in days_list:
-    db_day = day
-    db_prokens = days.count(day)
-    prokens = Proken(day=db_day, prokens=db_prokens)
-    db.session.add(prokens)
     db.session.commit()
 
-for proken in Proken.query.all():
-    print(proken)
+if __name__ == '__main__':
+    init()
+    make_user()
+    make_date()
+    make_ralation()
+    make_time()
+    make_proken()
+
+    '''
+    for date in Date.query.all():
+        print(date.day, "の活動")
+        for user in date.users:
+            time = Time.query.filter_by(user_id=user.user_id).filter_by(date_id=date.date_id).first()
+            print(user.name, ":", time.start.hour, "~", time.end.hour)
+
+    '''
+    for date in Date.query.all():
+        print(date.day, ":", date.members)
 
 

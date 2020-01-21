@@ -1,60 +1,77 @@
 from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
-from main.models import User, Date, Proken
+from main.models import User, Date, Time
 import datetime
 
-def save_user(user_name):
-    user = User(name = user_name)
+def save_new_user(user_name):
+    user = User(name=user_name)
     db.session.add(user)
     db.session.commit()
     print("save new user:", user_name)
     flash("save new user successfully")
 
-def make_attend_msg(user_id):
-    message = "Attend now!!"
+def get_today():
+    today_date = datetime.date.today()
+    today = datetime.datetime(*today_date.timetuple()[:3])
 
-    if User.query.filter_by(id=user_id).first().active:
-        message = "Finish work"
+    return today
 
-    return message
+def new_date_make(date):
+    new_date = Date(day=date, members=0)
+    db.session.add(new_date)
+    db.session.commit()
 
-def count_user():
-    count = 0
-    today = datetime.datetime.today()
-    today = str(today.year)+str(today.month)+str(today.day)
-    dates = Date.query.filter().all()
-    for date in dates:
-        user = User.query.filter_by(id=date.user_id).first()
-        date = date.start
-        date = str(date.year)+str(date.month)+str(date.day)
-        if date == today:
-            count+=1
-            print(user, date)
-    return count
+def count_member():
+    today = get_today()
+    member_num = 0
+    date = Date.query.filter_by(day=today).first()
 
-def calc_time_diff(t1, t2):
-    td = t2 - t1
-    return int(td.seconds / 3600)
+    if date is None :
+        new_date_make()
+    else :
+        member_num = date.members
 
-def make_record(user_id):
+    return member_num
+
+def calc_time_diff(start, end):
+    time_diff = end - start
+    return int(time_diff.seconds / 3600)
+
+def get_date(datetime_obj):
+    date = datetime.datetime(*datetime_obj.timetuple()[:3])
+    return date
+
+def user_record_maker(user_id):
     record = {}
-    for date in Date.query.filter_by(user_id=user_id).all():
-        if date.end is None:
-            continue
-        record.setdefault(int(date.start.timestamp()), calc_time_diff(date.start, date.end))
+    user = User.query.filter_by(user_id=user_id).first()
+    times = Time.query.filter_by(user_id=user_id).all()
+
+    for time in times :
+        date = get_date(time.start)
+        work_time = calc_time_diff(time.start, time.end)
+        
+        record.setdefault(int(date.timestamp()), work_time)
 
     return record
 
-def make_proken():
+def proken_record_maker():
     record = {}
-    for proken in Proken.query.all():
-        if proken is None:
-            continue
-        else :
-            record.setdefault(int(proken.day.timestamp()), proken.prokens)
+    for date in Date.query.all():
+        record.setdefault(int(date.day.timestamp()), date.members)
                 
     return record
 
+def now_time_str_getter():
+    now = datetime.datetime.now()
+    time_str = "{0:%Y-%m-%dT%H:%M}".format(now)
+
+    return time_str
+
+def save_user_status(user_name, user_status):
+    user = User.query.filter_by(name=user_name).first()
+    user.active = user_status
+    db.session.add(user)
+    db.session.commit()
 
 def get_seven_data(user_id):
     user = User.query.filter_by(id=user_id).first()
@@ -81,7 +98,7 @@ def decide_sound_level(start_times):
 @app.route('/')
 def index():
     active_users = User.query.filter_by(active=True).all()
-    all_user_num = 4#count_user()
+    all_user_num = count_member()
     return render_template('index.html', users=active_users, users_num=all_user_num )
 
 @app.route('/users/create', methods=['GET', 'POST'])
@@ -92,19 +109,20 @@ def new_user():
         if user_name == "" :
             return render_template('new_user.html')
         else :
-            save_user(user_name)
+            save_new_user(user_name)
             return redirect(url_for('index'))
+
     return render_template('new_user.html')
 
 @app.route('/users/<int:user_id>')
 def user_detail(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    record = make_record(user_id)
+    user = User.query.filter_by(user_id=user_id).first()
+    record = user_record_maker(user_id)
     return render_template('user_detail.html', user = user, record=record)
 
 @app.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 def edit_user(user_id):
-    user = User.query.get(user_id)
+    user = User.query.filter_by(user_id=user_id).first()
     if request.method == 'POST':
         user_name = request.form['user_name']
         if user_name == "" :
@@ -113,25 +131,15 @@ def edit_user(user_id):
             user.name = request.form['user_name']
             db.session.add(user)
             db.session.commit()
-            return redirect(url_for('user_detail', user_id = user.id))
+            return redirect(url_for('user_detail', user_id = user.user_id))
 
     return render_template('user_edit.html', user = user)
 
 @app.route('/users/')
 def user_list():
     users = User.query.all()
-    today = datetime.datetime.today()
-    today = datetime.datetime(today.year, today.month, today.day)
-    proken = Proken.query.filter_by(day=today).first()
-    if proken is None:
-        proken = Proken(day=today, prokens=1)
-    else:
-        proken.prokens += 1
+    record = proken_record_maker()
 
-    record = make_proken()
-
-    db.session.add(proken)
-    db.session.commit()
     return render_template('user_list.html', users=users, record=record)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -139,12 +147,14 @@ def login():
     if request.method == 'POST':
         user = User.authenticate(db.session.query,
                 request.form['user_name'])
-        if user != None:
-            session['user_id'] = user.id
+        if user is None:
+            flash('Invalid your name')
+
+        else :
+            session['user_id'] = user.user_id
             flash('You were logged in')
             return redirect(url_for('index'))
-        else:
-            flash('Invalid your name')
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -155,43 +165,43 @@ def logout():
 
 @app.route('/attend', methods=['GET', 'POST'])
 def attend():
+    users = User.query.all()
+    time = now_time_str_getter()
+    
     if request.method == 'POST':
-        now = datetime.datetime.today()
-        date = Date(user_id=session['user_id'], start=now)
-        user = User.query.filter(User.id==session['user_id']).first()
-        user.active = not user.active
-        db.session.add(date)
-        db.session.add(user)
-        db.session.commit()
-
-        print("Date saved!")
+        user_name = request.form['user_name']
+        user_status = bool(request.form['user_status'])
+        save_user_status(user_name, user_status)
+        
         flash("Thank You !!")
         return redirect(url_for('index'))
-    
-    message = make_attend_msg(session['user_id'])
-    
-    return render_template('attend.html', message=message)
+    else:
+        return render_template('attend.html', users=users, now_time=time)
 
 @app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
 def raspy(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    time = datetime.datetime.today()
-    if user.active:
-        date = Date.query.filter_by(user_id=user_id).first()
-        date.end = time
+    if request.method == 'POST':
+        user = User.query.filter_by(id=user_id).first()
+        time = datetime.datetime.today()
+        if user.active:
+            date = Date.query.filter_by(user_id=user_id).first()
+            date.end = time
+        else:
+            date = Date(user_id=user_id, start=time)
+
+        user.active = not user.active
+        db.session.add(user)
+        db.session.add(date)
+        db.session.commit()
+
+        record={
+                'user_id' : user_id,
+                'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
+                'sound' : decide_sound_level( get_seven_data(user_id))
+                }
+
+        return jsonify(record)
+
     else:
-        date = Date(user_id=user_id, start=time)
-
-    user.active = not user.active
-    db.session.add(user)
-    db.session.add(date)
-    db.session.commit()
-
-    record={
-            'user_id' : user_id,
-            'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
-            'sound' : decide_sound_level( get_seven_data(user_id))
-            }
-
-    return jsonify(record)
+        return redirect(url_for('attend'))
 
