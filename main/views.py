@@ -67,6 +67,12 @@ def now_time_str_getter():
 
     return time_str
 
+def save_user_status(user_name, user_status):
+    user = User.query.filter_by(name=user_name).first()
+    user.active = user_status
+    db.session.add(user)
+    db.session.commit()
+
 def get_seven_data(user_id):
     user = User.query.filter_by(id=user_id).first()
     dates = user.dates
@@ -163,10 +169,12 @@ def attend():
     time = now_time_str_getter()
     
     if request.method == 'POST':
-        print("Date saved!")
+        user_name = request.form['user_name']
+        user_status = bool(request.form['user_status'])
+        save_user_status(user_name, user_status)
+        
         flash("Thank You !!")
-
-        return redirect(url_for('attend'))
+        return redirect(url_for('index'))
     else:
         return render_template('attend.html', users=users, now_time=time)
 

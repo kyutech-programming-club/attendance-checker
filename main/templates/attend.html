@@ -4,7 +4,7 @@
 <h2>Attend</h2>
 <form action="{{url_for('attend')}}", method="post">
   <div>
-    <select name="users" size="1">
+    <select name="user_name" size="1">
       {% for user in users %}
       <option>{{user.name}}</option>
       {% endfor %}
@@ -13,11 +13,11 @@
 
   <div>
     <input type="radio" id="active_status"
-     name="status" value="True" checked>
+     name="user_status" value="TRUE" checked>
     <label for="active">活動開始</label>
 
     <input type="radio" id="non-active-staus"
-     name="status" value="False">
+     name="user_status" value="">
     <label for="non-active">活動終了</label>
   </div>
 
