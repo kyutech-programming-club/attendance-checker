@@ -61,6 +61,11 @@ def proken_record_maker():
                 
     return record
 
+def now_time_str_getter():
+    now = datetime.datetime.now()
+    time_str = "{0:%Y-%m-%dT%H:%M}".format(now)
+
+    return time_str
 
 def get_seven_data(user_id):
     user = User.query.filter_by(id=user_id).first()
@@ -155,6 +160,7 @@ def logout():
 @app.route('/attend', methods=['GET', 'POST'])
 def attend():
     users = User.query.all()
+    time = now_time_str_getter()
     
     if request.method == 'POST':
         print("Date saved!")
@@ -162,7 +168,7 @@ def attend():
 
         return redirect(url_for('attend'))
     else:
-        return render_template('attend.html', users=users)
+        return render_template('attend.html', users=users, now_time=time)
 
 @app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
 def raspy(user_id):
