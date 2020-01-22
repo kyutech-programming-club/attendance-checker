@@ -2,11 +2,17 @@ from models.models import User
 import requests
 import settings
 
-if __name__ == '__main__' :
+def make_request(user_id):
     url = settings.WEB_APP_URL
     data = {
-            'message' : 'Hello, World'
+            'user_id' : user_id
             }
-    res = requests.post(url, data=data)
+    post = requests.post(url, data=data)
+    return post
+
+if __name__ == '__main__' :
+    
+    user_id = 1 #get from finger-print
+    res = make_request(user_id)
     print(res.text)
     

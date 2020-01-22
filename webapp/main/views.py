@@ -181,10 +181,14 @@ def attend():
 @app.route('/raspi', methods=['GET', 'POST'])
 def raspi():
     if request.method == 'POST':
-        data = request.form['message']
-        print(data)
+        user_id = request.form['user_id']
+        user = User.query.filter_by(user_id=user_id).first()
 
-        return data
+        user.active = not user.active
+        db.session.add(user)
+        db.session.commit()
+
+        return "OK. id={user_id} member's active is {status}".format(user_id=user_id, status=user.active)
 
     else:
         return redirect(url_for('attend'))
