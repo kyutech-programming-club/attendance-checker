@@ -178,29 +178,13 @@ def attend():
     else:
         return render_template('attend.html', users=users, now_time=time)
 
-@app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
-def raspy(user_id):
+@app.route('/raspi', methods=['GET', 'POST'])
+def raspi():
     if request.method == 'POST':
-        user = User.query.filter_by(id=user_id).first()
-        time = datetime.datetime.today()
-        if user.active:
-            date = Date.query.filter_by(user_id=user_id).first()
-            date.end = time
-        else:
-            date = Date(user_id=user_id, start=time)
+        data = request.form['message']
+        print(data)
 
-        user.active = not user.active
-        db.session.add(user)
-        db.session.add(date)
-        db.session.commit()
-
-        record={
-                'user_id' : user_id,
-                'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
-                'sound' : decide_sound_level( get_seven_data(user_id))
-                }
-
-        return jsonify(record)
+        return data
 
     else:
         return redirect(url_for('attend'))
