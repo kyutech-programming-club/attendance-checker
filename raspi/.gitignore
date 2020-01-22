@@ -1,1 +1,3 @@
 **/raspienv
+__pycache__/
+*.db
