@@ -73,6 +73,59 @@ def save_user_status(user_name, user_status):
     db.session.add(user)
     db.session.commit()
 
+def date_finder():
+    today = get_today()
+    date = Date.query.filter_by(day=today).first()
+
+    if date is None:
+        date = Date(day=today, members=0)
+
+    return date
+
+def save_attend_user_status(user):
+    user.active = not user.active
+    db.session.add(user)    
+    db.session.commit()
+
+def save_attend_date(user, date):
+    
+    if user not in date.users:
+        date.subscribers.append(user)
+        date.members += 1
+        db.session.add(date)
+        db.session.commit()
+
+    else:
+        print(user.name, "has already attended")
+
+def get_now_time():
+    now = datetime.datetime.now()
+    now_time = datetime.datetime(*now.timetuple()[:6])
+
+    return now_time
+
+def save_attend_time(user, date):
+    attend_time = get_now_time()
+    time = Time.query.filter_by(user=user).filter_by(date=date).order_by(Time.time_id.desc()).first()
+
+    if time is None or time.end is not None:
+        time = Time(user=user, date=date, start=attend_time)
+
+    else:
+        time.end = attend_time
+
+    db.session.add(time)
+    db.session.commit()
+
+def save_attend(user_id):
+    user = User.query.filter_by(user_id=user_id).first()
+    date = date_finder()
+
+    save_attend_user_status(user)
+    save_attend_date(user, date)
+    save_attend_time(user, date)
+
+
 def get_seven_data(user_id):
     user = User.query.filter_by(id=user_id).first()
     dates = user.dates
@@ -182,13 +235,10 @@ def attend():
 def raspi():
     if request.method == 'POST':
         user_id = request.form['user_id']
-        user = User.query.filter_by(user_id=user_id).first()
+        
+        save_attend(user_id)
 
-        user.active = not user.active
-        db.session.add(user)
-        db.session.commit()
-
-        return "OK. id={user_id} member's active is {status}".format(user_id=user_id, status=user.active)
+        return "OK."
 
     else:
         return redirect(url_for('attend'))
