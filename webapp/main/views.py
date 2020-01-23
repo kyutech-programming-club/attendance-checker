@@ -43,14 +43,18 @@ def get_date(datetime_obj):
 
 def user_record_maker(user_id):
     record = {}
-    user = User.query.filter_by(user_id=user_id).first()
-    times = Time.query.filter_by(user_id=user_id).all()
 
-    for time in times :
+    times = Time.query.filter_by(user_id=user_id).order_by(Time.date_id).all()
+    date_id = 0
+    for time in times:
         date = get_date(time.start)
         work_time = calc_time_diff(time.start, time.end)
-        
-        record.setdefault(int(date.timestamp()), work_time)
+
+        if time.date_id is not date_id:
+            date_id = time.date_id
+            record[date.timestamp()] = work_time
+        else:
+            record[date.timestamp()] += work_time
 
     return record
 
@@ -96,7 +100,7 @@ def save_attend_date(user, date):
         db.session.commit()
 
     else:
-        print(user.name, "has already attended")
+        print(user.name, "has already attended in the day")
 
 def get_now_time():
     now = datetime.datetime.now()
