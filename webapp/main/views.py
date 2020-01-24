@@ -1,6 +1,7 @@
 from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
 from main.models import User, Date, Time
+from operator import attrgetter
 import datetime
 
 def save_new_user(user_name):
@@ -15,6 +16,11 @@ def get_today():
     today = datetime.datetime(*today_date.timetuple()[:3])
 
     return today
+
+def get_tomorrow():
+    tomorrow = get_today() + datetime.timedelta(days=1)
+
+    return tomorrow
 
 def new_date_make(date):
     new_date = Date(day=date, members=0)
@@ -47,10 +53,13 @@ def user_record_maker(user_id):
     times = Time.query.filter_by(user_id=user_id).order_by(Time.date_id).all()
     date_id = 0
     for time in times:
+        if time.end is None:
+            continue
+
         date = get_date(time.start)
         work_time = calc_time_diff(time.start, time.end)
 
-        if time.date_id is not date_id:
+        if time.date_id != date_id:
             date_id = time.date_id
             record[date.timestamp()] = work_time
         else:
@@ -130,27 +139,32 @@ def save_attend(user_id):
     save_attend_time(user, date)
 
 
-def get_seven_data(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    dates = user.dates
-    start_times = []
-    for st in dates:
-        start_times.append(st.start)
+def get_user_dates(user_id):
+    
+    dates = User.query.filter_by(user_id=user_id).first().dates
+    dates.sort(key=attrgetter("date_id"), reverse=True)
 
-    start_times = sorted(start_times, reverse=True)
+    return dates
 
-    return start_times[:7]
-
-def decide_sound_level(start_times):
-    sound_level = 1
-    date = start_times[0]
-    for i in (range(1, 7)):
-        if start_times[i].date() == date.date() - datetime.timedelta(days=1):
-            date = start_times[i]
-            sound_level += 1
+def calc_continuity(dates):
+    continuity = 1
+    for i in range(len(dates)-1):
+        if (dates[i].day == dates[i+1].day + datetime.timedelta(days=1)):
+            continuity += 1
         else:
             break
-    return sound_level
+
+    return continuity        
+
+def decide_sound_level(user_id):
+    user_dates = get_user_dates(user_id)
+    continuity = calc_continuity(user_dates)
+    level = continuity + 1
+
+    if continuity >= 7:
+        level = 7
+
+    return level
 
 @app.route('/')
 def index():
@@ -241,8 +255,16 @@ def raspi():
         user_id = request.form['user_id']
         
         save_attend(user_id)
+        sound_level = decide_sound_level(user_id)
+        expected_day = get_tomorrow()
 
-        return "OK."
+        responce = {
+                'user_id' : user_id,
+                'sound_level' : sound_level,
+                'expected_day' : expected_day
+                }
+
+        return jsonify(responce)
 
     else:
         return redirect(url_for('attend'))
