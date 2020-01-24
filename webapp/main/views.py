@@ -261,7 +261,7 @@ def raspi():
         responce = {
                 'user_id' : user_id,
                 'sound_level' : sound_level,
-                'expected_day' : expected_day
+                'expected_day' : expected_day.timestamp()
                 }
 
         return jsonify(responce)
