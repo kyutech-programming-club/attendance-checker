@@ -1,6 +1,7 @@
 from flask import request, redirect, url_for, render_template, flash, session, jsonify
 from main import app, db
 from main.models import User, Date, Time
+from operator import attrgetter
 import datetime
 
 def save_new_user(user_name):
@@ -16,6 +17,11 @@ def get_today():
 
     return today
 
+def get_tomorrow():
+    tomorrow = get_today() + datetime.timedelta(days=1)
+
+    return tomorrow
+
 def new_date_make(date):
     new_date = Date(day=date, members=0)
     db.session.add(new_date)
@@ -27,7 +33,7 @@ def count_member():
     date = Date.query.filter_by(day=today).first()
 
     if date is None :
-        new_date_make()
+        new_date_make(today)
     else :
         member_num = date.members
 
@@ -43,14 +49,21 @@ def get_date(datetime_obj):
 
 def user_record_maker(user_id):
     record = {}
-    user = User.query.filter_by(user_id=user_id).first()
-    times = Time.query.filter_by(user_id=user_id).all()
 
-    for time in times :
+    times = Time.query.filter_by(user_id=user_id).order_by(Time.date_id).all()
+    date_id = 0
+    for time in times:
+        if time.end is None:
+            continue
+
         date = get_date(time.start)
         work_time = calc_time_diff(time.start, time.end)
-        
-        record.setdefault(int(date.timestamp()), work_time)
+
+        if time.date_id != date_id:
+            date_id = time.date_id
+            record[date.timestamp()] = work_time
+        else:
+            record[date.timestamp()] += work_time
 
     return record
 
@@ -73,27 +86,85 @@ def save_user_status(user_name, user_status):
     db.session.add(user)
     db.session.commit()
 
-def get_seven_data(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    dates = user.dates
-    start_times = []
-    for st in dates:
-        start_times.append(st.start)
+def date_finder():
+    today = get_today()
+    date = Date.query.filter_by(day=today).first()
 
-    start_times = sorted(start_times, reverse=True)
+    if date is None:
+        date = Date(day=today, members=0)
 
-    return start_times[:7]
+    return date
 
-def decide_sound_level(start_times):
-    sound_level = 1
-    date = start_times[0]
-    for i in (range(1, 7)):
-        if start_times[i].date() == date.date() - datetime.timedelta(days=1):
-            date = start_times[i]
-            sound_level += 1
+def save_attend_user_status(user):
+    user.active = not user.active
+    db.session.add(user)    
+    db.session.commit()
+
+def save_attend_date(user, date):
+    
+    if user not in date.users:
+        date.subscribers.append(user)
+        date.members += 1
+        db.session.add(date)
+        db.session.commit()
+
+    else:
+        print(user.name, "has already attended in the day")
+
+def get_now_time():
+    now = datetime.datetime.now()
+    now_time = datetime.datetime(*now.timetuple()[:6])
+
+    return now_time
+
+def save_attend_time(user, date):
+    attend_time = get_now_time()
+    time = Time.query.filter_by(user=user).filter_by(date=date).order_by(Time.time_id.desc()).first()
+
+    if time is None or time.end is not None:
+        time = Time(user=user, date=date, start=attend_time)
+
+    else:
+        time.end = attend_time
+
+    db.session.add(time)
+    db.session.commit()
+
+def save_attend(user_id):
+    user = User.query.filter_by(user_id=user_id).first()
+    date = date_finder()
+
+    save_attend_user_status(user)
+    save_attend_date(user, date)
+    save_attend_time(user, date)
+
+
+def get_user_dates(user_id):
+    
+    dates = User.query.filter_by(user_id=user_id).first().dates
+    dates.sort(key=attrgetter("date_id"), reverse=True)
+
+    return dates
+
+def calc_continuity(dates):
+    continuity = 1
+    for i in range(len(dates)-1):
+        if (dates[i].day == dates[i+1].day + datetime.timedelta(days=1)):
+            continuity += 1
         else:
             break
-    return sound_level
+
+    return continuity        
+
+def decide_sound_level(user_id):
+    user_dates = get_user_dates(user_id)
+    continuity = calc_continuity(user_dates)
+    level = continuity + 1
+
+    if continuity >= 7:
+        level = 7
+
+    return level
 
 @app.route('/')
 def index():
@@ -178,29 +249,22 @@ def attend():
     else:
         return render_template('attend.html', users=users, now_time=time)
 
-@app.route('/raspi/<int:user_id>', methods=['GET', 'POST'])
-def raspy(user_id):
+@app.route('/raspi', methods=['GET', 'POST'])
+def raspi():
     if request.method == 'POST':
-        user = User.query.filter_by(id=user_id).first()
-        time = datetime.datetime.today()
-        if user.active:
-            date = Date.query.filter_by(user_id=user_id).first()
-            date.end = time
-        else:
-            date = Date(user_id=user_id, start=time)
+        user_id = request.form['user_id']
+        
+        save_attend(user_id)
+        sound_level = decide_sound_level(user_id)
+        expected_day = get_tomorrow()
 
-        user.active = not user.active
-        db.session.add(user)
-        db.session.add(date)
-        db.session.commit()
-
-        record={
+        responce = {
                 'user_id' : user_id,
-                'date' : str(datetime.date.today() + datetime.timedelta(days=1)),
-                'sound' : decide_sound_level( get_seven_data(user_id))
+                'sound_level' : sound_level,
+                'expected_day' : expected_day.timestamp()
                 }
 
-        return jsonify(record)
+        return jsonify(responce)
 
     else:
         return redirect(url_for('attend'))

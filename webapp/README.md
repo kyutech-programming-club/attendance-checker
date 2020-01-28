@@ -1,2 +1,1 @@
 # attendance-checker
-comming soon …
