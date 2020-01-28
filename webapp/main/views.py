@@ -33,7 +33,7 @@ def count_member():
     date = Date.query.filter_by(day=today).first()
 
     if date is None :
-        new_date_make()
+        new_date_make(today)
     else :
         member_num = date.members
 
