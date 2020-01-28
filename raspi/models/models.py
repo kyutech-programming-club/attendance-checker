@@ -5,15 +5,14 @@ import datetime
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128), unique=True)
-    sound = Column(Integer, default=0)
-    date = Column(DateTime, default=datetime.datetime(2019, 4, 1))
+    user_id = Column(Integer, primary_key=True)
+    sound_level = Column(Integer, default=0)
+    expected_day = Column(DateTime, default=datetime.datetime(2019, 4, 1))
 
-    def __init__(self, name=None, sound=None, date=None):
-        self.name = name
-        self.sound = sound
-        self.date = date
+    def __init__(self, user_id=None, sound_level=None, expected_day=None):
+        self.user_id = user_id
+        self.sound_level = sound_level
+        self.expected_day = expected_day
 
     def __repr__(self):
-        return '<id:{self.id} name:{self.name} sound:{self.sound} date:{self.date}>'.format(self=self)
+        return '<id:{self.user_id} sound_level:{self.sound_level} expected_day:{self.expected_day}>'.format(self=self)
