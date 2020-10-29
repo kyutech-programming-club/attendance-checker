@@ -1,17 +1,20 @@
 <template>
   <v-app>
-    <v-app-bar
-      dark>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
-      <router-link to="/attend">Attend</router-link>
-    </v-app-bar>
+    <Header />
     <v-main>
       <router-view />
     </v-main>
   </v-app>
 </template>
+
+<script>
+  import Header from '@/components/Header.vue';
+  export default {
+    components: {
+      Header
+    }
+  }
+</script>
 
 <style lang="scss">
   #app {
